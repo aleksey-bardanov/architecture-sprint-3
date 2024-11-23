@@ -1,0 +1,18 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+title Диаграмма контекста сервиса компании "Теплый дом" 
+
+Person(customer, "Пользователь", "Владелец умного дома")
+System(smart_home_service, "Система управления умным домом", "Предоставляет возможность управления умным домом, как услугу")
+
+System_Ext(notification_service, "Сервис уведомлений", "Внешний сервис для отправки уведомлений пользователю (email, push, call)")
+System_Ext(web_ui, "Пользовательский WEB интерфейс", "Предоставляет пользователю удобный способ взаимодействия с системой")
+
+Rel(customer, web_ui, "Управляет и умным домом")
+Rel_Back(customer, web_ui, "Мониторит состояние умного дома")
+Rel_Back(customer, notification_service, "Отправляет уведомления выбранным способом")
+Rel_Neighbor(smart_home_service, notification_service, "Запрашивает уведомление")
+Rel(web_ui, smart_home_service, "Передаёт запросы пользователя")
+Rel_Back(web_ui, smart_home_service, "Передает предоставляет информацию об умном доме")
+@enduml
