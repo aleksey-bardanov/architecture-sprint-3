@@ -1,0 +1,110 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Диаграмма контейнеров
+
+AddRelTag("brocker_message", $lineStyle = DashedLine())
+
+LAYOUT_WITH_LEGEND()
+
+System_Ext(notification_service, "Сервис уведомлений", "Внешний сервис для отправки уведомлений пользователю (email, push, call)")
+System_Ext(web_ui, "Пользовательский WEB интерфейс", "Предоставляет пользователю удобный способ взаимодействия с системой")
+System_Ext(iot_device, "Умное устройство", "Установлено в доме пользователя")
+System_Ext(auth_service, "Система аутентификации и авторизации пользователей")
+
+System_Boundary(heating_service, "Предоставляет возможность управления умным домом как услугу") {
+    Container(api_gateway, "API Gateway", "Kong", "Перенаправляет запросы, балансирует нагрузку")
+    
+    System_Boundary(iot_registry, "Регистрация умных устройств") {
+        Container(iot_registry_app, "IoT Devices Registry Service", "java, SpringBoot", "")
+        ContainerDb(iot_registry_db, "IoT Devices Registry Database", "SQL", "")
+    }
+
+    System_Boundary(iot_healthcheck, "Контроль состояния умных устройств") {
+        Container(iot_healthcheck_app, "IoT Devices Health Check Service", "java, SpringBoot", "")
+        ContainerDb(iot_healthcheck_db, "IoT Devices Health Check", "SQL", "")
+    }
+
+    System_Boundary(sensors, "Сбор и хранение показаний датчиков") {
+        Container(sensors_app, "Sensors Telemetry Service", "1", "")
+        ContainerDb(sensors_db, "Sensors Telemetry Service", "SQL", "")
+    }
+    
+    System_Boundary(cctv, "Видеонаблюдение") {
+        Container(cctv_app, "CCTV Service", "java, SpringBoot", "")
+        ContainerDb(cctv_db, "CCTV Service", "SQL", "")
+    }
+
+    System_Boundary(heating, "Управление отоплением") {
+        Container(heating_app, "Heating Management", "java, SpringBoot", "")
+        ContainerDb(heating_db, "Heating Management", "SQL", "")
+    }
+
+    System_Boundary(lighting, "Управление освещением") {
+        Container(lighting_app, "Lighting Management", "java, SpringBoot", "")
+        ContainerDb(lighting_db, "Lighting Management", "SQL", "")
+    }
+    
+    
+    System_Boundary(gates, "Управление воротами") {
+        Container(gates_app, "Gates Management", "java, SpringBoot", "")
+        ContainerDb(gates_db, "Gates Management", "SQL", "")
+    }
+    
+    System_Boundary(use_cases, "Сценарии управления умным домом") {
+        Container(use_cases_app, "Use Cases Management", "java, SpringBoot", "")
+        ContainerDb(use_cases_db, "Use Cases Management", "NO_SQL", "")
+    }
+    
+    System_Boundary(user_account, "Аккаунт пользователя") {
+        Container(user_account_app, "User Account Service", "java, SpringBoot", "")
+        ContainerDb(user_account_db, "User Account Database", "SQL", "")
+    }
+
+    System_Boundary(user_notification, "Управление уведомлениями") {
+        Container(user_notification_app, "User Notification Service", "java, SpringBoot", "")
+        ContainerDb(user_notification_db, "User Notification Database", "java, SpringBoot", "")
+    }
+    
+
+    SystemQueue(message_brocker, "Kafka", "Обмен событиями")
+}
+
+Rel_D(web_ui, api_gateway, "Пользовательские запросы")
+Rel_D(iot_device, api_gateway, "Показания, обновление состояния")
+Rel_Neighbor(api_gateway, auth_service, "Выполняет аутентификацию и авторизацию")
+Rel_L(user_notification_app, notification_service, "Запросы на уведомление пользователя")
+
+Rel_D(api_gateway, iot_registry_app, "")
+Rel_D(api_gateway, iot_healthcheck_app, "")
+Rel_D(api_gateway, sensors_app, "")
+Rel_D(api_gateway, cctv_app, "")
+Rel_D(api_gateway, heating_app, "")
+Rel_D(api_gateway, lighting_app, "")
+Rel_D(api_gateway, gates_app, "")
+Rel_D(api_gateway, use_cases_app, "")
+Rel_D(api_gateway, user_account_app, "")
+Rel_D(api_gateway, user_notification_app, "")
+
+Rel_D(iot_registry_app, iot_registry_db, "чтение/запись")
+Rel_D(iot_healthcheck_app, iot_healthcheck_db, "чтение/запись")
+Rel_D(sensors_app, sensors_db, "чтение/запись")
+Rel_D(cctv_app, cctv_db, "чтение/запись")
+Rel_D(heating_app, heating_db, "чтение/запись")
+Rel_D(lighting_app, lighting_db, "чтение/запись")
+Rel_D(gates_app, gates_db, "чтение/запись")
+Rel_D(use_cases_app, use_cases_db, "чтение/запись")
+Rel_D(user_account_app, user_account_db, "чтение/запись")
+Rel_D(user_notification_app, user_notification_db, "чтение/запись")
+
+Rel_D(iot_registry_app, message_brocker, "устройство добавлено/удалено", $tags="brocker_message")
+Rel_D(iot_healthcheck_app, message_brocker, "устройство доступно/недоступно", $tags="brocker_message")
+Rel_D(sensors_app, message_brocker, "показания изменились", $tags="brocker_message")
+Rel_D(heating_app, message_brocker, "состояние изменилось", $tags="brocker_message")
+Rel_D(lighting_app, message_brocker, "состояние изменилось", $tags="brocker_message")
+Rel_D(gates_app, message_brocker, "состояние изменилось", $tags="brocker_message")
+Rel_D(use_cases_app, message_brocker, "получение данных, отправка команд", $tags="brocker_message")
+Rel_D(user_account_app, message_brocker, "изменение аккаунта пользователя", $tags="brocker_message")
+Rel_D(user_notification_app, message_brocker, "контроль изменения состояния системы", $tags="brocker_message")
+
+@enduml
