@@ -1,0 +1,23 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_LANDSCAPE()
+
+System(api_gateway, "API Gateway")
+SystemQueue(message_brocker, "Kafka")
+
+Container_Boundary(device_registry_service, "Device Registry Service") {
+  Component(rest_controller, "REST Controller", "Controller")
+  Component(registry_server, "Device Registry Server", "Server")
+  Component(mq_controller, "MQ Controller", "Controller")
+}
+
+Lay_D(mq_controller, registry_server)
+
+Rel_U(api_gateway, rest_controller, "HTTP, REST")
+Rel_U(rest_controller, registry_server, "Uses")
+Rel_U(mq_controller, registry_server, "Uses")
+Rel_U(mq_controller, message_brocker, "Produce message")
+
+@enduml
