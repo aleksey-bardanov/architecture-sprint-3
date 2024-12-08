@@ -1,0 +1,35 @@
+@startuml
+abstract CheckInState {
+    setCommunicationStrategy()
+    processRequest()
+}
+class           WaitingCheckInRequest
+class           CheckingInNewDevice
+class           RegistrationContext
+
+abstract        CheckInStrategy {
+    processRequest()
+}
+class           SensorCheckInStrategy
+class           RelayCheckInStrategy
+class           VideoCameraCheckInStrategy
+
+class  RegistrationService {
+   processRequest()
+   getCheckInState()
+   setCheckInState()
+}
+
+CheckInState <|-- WaitingCheckInRequest
+CheckInState <|-- CheckingInNewDevice
+CheckInState <..  RegistrationContext
+
+CheckInStrategy <|-- SensorCheckInStrategy
+CheckInStrategy <|-- RelayCheckInStrategy
+CheckInStrategy <|-- VideoCameraCheckInStrategy
+
+RegistrationService --* CheckInState
+RegistrationService --* RegistrationContext
+RegistrationContext ..o CheckInStrategy
+
+@enduml
