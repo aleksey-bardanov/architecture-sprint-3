@@ -1,0 +1,10 @@
+name: warm-house
+services:
+  devices-service:
+    container_name: devices-service
+    build:
+      context: service-devices
+      dockerfile: Dockerfile
+    image: devices-service
+    ports:
+      - "8180:8180"

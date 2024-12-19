@@ -1,0 +1,94 @@
+asyncapi: 3.0.0
+info:
+  title: warmHomeApplication
+  version: 0.1.0
+  description: |
+    Приложение "Теплый дом" позволяет управлять умными устройствами в вашем доме
+
+servers:
+  kafka:
+    host: kafka.warm-home.org:8092
+    protocol: kafka
+
+operations:
+  sendUserEvent:
+    action: send
+    title: Создан новый пользователь
+    channel:
+      $ref: '#/channels/users'
+
+channels:
+  users:
+    address: users
+    title: Информация о пользователях
+    description: |
+      Сюда публикуются события связанные с пользователями и домами пользователей.
+    messages:
+      userCreated:
+        $ref: '#/components/messages/userCreated'
+      userUpdated:
+        $ref: '#/components/messages/userUpdated'
+      userDeleted:
+        $ref: '#/components/messages/userDeleted'
+      houseCreated:
+        $ref: '#/components/messages/houseCreated'
+      houseUpdated:
+        $ref: '#/components/messages/houseUpdated'
+      houseDeleted:
+        $ref: '#/components/messages/houseDeleted'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        email:
+          type: string
+
+    House:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        user_id:
+          type: integer
+          format: int64
+        address:
+          type: string
+
+  messages:
+    userCreated:  
+      summary: Создан новый пользователь
+      payload:
+        $ref: '#/components/schemas/User'
+    
+    userUpdated:
+      summary: Данные пользователя обновлены 
+      payload:
+        $ref: '#/components/schemas/User'
+    
+    userDeleted:
+      summary: Пользователь удален
+      payload:
+        $ref: '#/components/schemas/User'
+    
+    houseCreated:
+      summary: Добавлен новый дом
+      payload:
+        $ref: '#/components/schemas/House'
+    
+    houseUpdated:
+      summary: Данные о доме изменены
+      payload:
+        $ref: '#/components/schemas/House'
+    
+    houseDeleted:
+      summary: Дом удален
+      payload:
+        $ref: '#/components/schemas/House'
