@@ -1,0 +1,28 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Диаграмма компонентов сервиса User Account Service
+
+System(api_gateway, "API Gateway")
+SystemQueue(message_brocker, "Kafka")
+SystemDb(user_account_db, "User Account Database", "PostgresQL")
+
+Container_Boundary(user_account_service, "User Account Service") {
+  Component(rest_controller, "REST Controller", "Controller")
+  Component(mq_controller, "MQ Controller", "Controller")
+  Component(user_account_server, "User Account Server", "Server")
+  Component(db_controller, "DB Controller", "Controller")
+}
+
+Rel_Down(api_gateway, rest_controller, "Использует", "HTTP, REST")
+
+Rel_Down(rest_controller, user_account_server, "Запросы пользователей")
+Rel_Down(user_account_server, mq_controller, "Пользовательские события")
+
+Rel_Down(user_account_server, db_controller, "Данные пользователей")
+
+Rel_Down(mq_controller, message_brocker, "Публикует")
+Rel_Down(db_controller, user_account_db, "Чтение/Запись")
+
+@enduml

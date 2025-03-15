@@ -1,0 +1,28 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Диаграмма компонентов сервиса Telemetry Service
+
+System(api_gateway, "API Gateway")
+SystemQueue(message_brocker, "Kafka")
+SystemDb(telemetry_db, "Telemetry Database", "ClickHouse")
+
+Container_Boundary(telemetry_service, "Telemetry Service") {
+  Component(rest_controller, "REST Controller", "Controller")
+  Component(mq_controller, "MQ Controller", "Controller")
+  Component(telemetry_server, "Telemetry Server", "Server")
+  Component(db_controller, "DB Controller", "Controller")
+}
+
+Rel_Down(api_gateway, rest_controller, "Использует", "HTTP, REST")
+
+Rel_Down(rest_controller, telemetry_server, "Показания датчиков")
+Rel_Down(telemetry_server, mq_controller, "Обновление показаний датчиков")
+
+Rel_Down(telemetry_server, db_controller, "Показания датчиков")
+
+Rel_Down(mq_controller, message_brocker, "Публикует")
+Rel_Down(db_controller, telemetry_db, "Чтение/Запись")
+
+@enduml

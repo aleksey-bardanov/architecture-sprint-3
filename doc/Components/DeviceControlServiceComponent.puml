@@ -1,0 +1,29 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Диаграмма компонентов сервиса Device Control Service
+
+System(api_gateway, "API Gateway")
+SystemQueue(message_brocker, "Kafka")
+SystemDb(device_control_db, "Device Control Database", "PostgresQL")
+
+Container_Boundary(device_control_service, "Device Control Service") {
+  Component(rest_controller, "REST Controller", "Controller")
+  Component(mq_controller, "MQ Controller", "Controller")
+  Component(device_control_server, "Device Control Server", "Server")
+  Component(db_controller, "DB Controller", "Controller")
+}
+
+Rel_Down(api_gateway, rest_controller, "Использует", "HTTP, REST")
+
+Rel_Down(rest_controller, device_control_server, "Команды управления устройствами")
+Rel_Down(device_control_server, mq_controller, "Изменение состояния устройств")
+Rel_Up( mq_controller, device_control_server, "Пользовательские события")
+
+Rel_Down(device_control_server, db_controller, "Состояние устройств")
+
+Rel_Down(mq_controller, message_brocker, "Подписывается/Публикует")
+Rel_Down(db_controller, device_control_db, "Чтение/Запись")
+
+@enduml
