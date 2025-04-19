@@ -1,0 +1,33 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Диаграмма компонентов сервиса User Notification Service
+
+System(api_gateway, "API Gateway")
+SystemQueue(message_brocker, "Kafka")
+SystemDb(user_notification_db, "User Notification Database", "PostgresQL")
+System_Ext(notification_service, "Notification Service")
+
+Container_Boundary(user_notification_service, "User Notification Service") {
+  Component(rest_controller, "REST Controller", "Controller")
+  Component(mq_controller, "MQ Controller", "Controller")
+  Component(user_notification_server, "User Notification Server", "Server")
+  Component(user_notification_scheduler, "User Notification Scheduler", "Server")
+  Component(db_controller, "DB Controller", "Controller")
+}
+
+Rel_Down(api_gateway, rest_controller, "Использует", "HTTP, REST")
+
+Rel_Down(rest_controller, user_notification_server, "Настройка политик уведомлений")
+Rel_Up( mq_controller, user_notification_server, "События")
+
+Rel_Down(user_notification_server, db_controller, "Пользовательские настройки, очередь уведомлений")
+
+Rel_Down(mq_controller, message_brocker, "Подписывается")
+Rel_Down(db_controller, user_notification_db, "Чтение/Запись")
+
+Rel_Up(db_controller, user_notification_scheduler, "Проверяет новые уведомления")
+Rel_Up(user_notification_scheduler, notification_service, "Отправляет уведомления")
+
+@enduml

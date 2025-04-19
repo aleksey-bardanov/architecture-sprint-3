@@ -1,0 +1,56 @@
+@startuml
+
+entity User {
+  * id
+  * name
+  * email
+}
+
+entity House {
+  * id
+  * user_id
+  * address
+}
+
+entity DeviceType {
+  * id
+  * name
+}
+
+entity Device {
+  * id
+  * type_id
+  * house_id
+  * serial_number
+  * status
+}
+
+entity TelemetryData {
+  * timestamp
+  * device_id
+  * value
+  * units
+}
+
+entity VideoFile {
+  * timestamp
+  * device_id
+  * path
+}
+
+entity UserNotification {
+  * id
+  * user_id
+  * device_id
+  * condition
+}
+
+
+User ||..o{ House
+House ||..o{ Device
+Device }o..|| DeviceType
+Device ||..o{ TelemetryData
+Device ||..o{ VideoFile
+User ||..o{ UserNotification
+
+@enduml

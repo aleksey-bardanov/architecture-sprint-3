@@ -1,0 +1,79 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Диаграмма контейнеров
+
+AddRelTag("brocker_message", $lineStyle = DashedLine())
+AddRelTag("video_stream", $lineColor = "Orange")
+
+LAYOUT_WITH_LEGEND()
+
+System_Ext(notification_service, "Сервис уведомлений", "Внешний сервис для отправки уведомлений пользователю (email, push, call)")
+System_Ext(web_ui, "Пользовательский WEB интерфейс", "Предоставляет пользователю удобный способ взаимодействия с системой")
+System_Ext(device, "Умное устройство", "Установлено в доме пользователя")
+System_Ext(auth_service, "Система аутентификации и авторизации пользователей")
+
+System_Boundary(heating_service, "Предоставляет возможность управления умным домом как услугу") {
+    Container(api_gateway, "API Gateway", "Kong", "Перенаправляет запросы, балансирует нагрузку")
+    
+    System_Boundary(device_registry, "Регистрация умных устройств") {
+        Container(device_registry_app, "Devices Registry Service", "java, SpringBoot", "")
+    }
+
+    System_Boundary(device_control, "Контроль состояния умных устройств") {
+        Container(device_control_app, "Devices Control Service", "java, SpringBoot", "")
+        ContainerDb(device_control_db, "Devices Control Database", "SQL", "")
+    }
+
+    System_Boundary(sensors, "Сбор и хранение показаний датчиков") {
+        Container(sensors_app, "Telemetry Service", "1", "")
+        ContainerDb(sensors_db, "Telemetry Database", "NoSql", "")
+    }
+    
+    System_Boundary(cctv, "Видеонаблюдение") {
+        Container(cctv_app, "CCTV Service", "java, SpringBoot", "")
+        ContainerDb(cctv_db, "CCTV Database", "SQL", "Хранит пути к сохраненным видеофайлам")
+        ContainerDb(server_filesystem, "Server Filesystem", $sprite="&folder,scale=5.0,color=gray")
+    }
+    
+    System_Boundary(user_account, "Аккаунт пользователя") {
+        Container(user_account_app, "User Account Service", "java, SpringBoot", "")
+        ContainerDb(user_account_db, "User Account Database", "SQL", "")
+    }
+
+    System_Boundary(user_notification, "Управление уведомлениями") {
+        Container(user_notification_app, "User Notification Service", "java, SpringBoot", "")
+        ContainerDb(user_notification_db, "User Notification Database", "SQL", "")
+    }
+    
+    SystemQueue(message_brocker, "Kafka", "Обмен событиями")
+}
+
+Rel_D(device, api_gateway, "Входящий видеопоток", $tags="video_stream")
+Rel_D(device, api_gateway, "Показания, обновление состояния")
+Rel_Back(web_ui, api_gateway, "Исходящий видеопоток", $tags="video_stream")
+Rel_D(web_ui, api_gateway, "Пользовательские запросы")
+Rel_Neighbor(api_gateway, auth_service, "Выполняет аутентификацию и авторизацию")
+Rel_L(user_notification_app, notification_service, "Запросы на уведомление пользователя")
+
+Rel_D(api_gateway, device_registry_app, "")
+Rel_D(api_gateway, device_control_app, "")
+Rel_D(api_gateway, sensors_app, "")
+Rel_D(api_gateway, cctv_app, "", $tags="video_stream")
+Rel_D(api_gateway, user_account_app, "")
+Rel_D(api_gateway, user_notification_app, "")
+
+Rel_D(device_control_app, device_control_db, "чтение/запись")
+Rel_D(sensors_app, sensors_db, "чтение/запись")
+Rel_D(cctv_app, cctv_db, "чтение/запись")
+Rel_D(cctv_app, server_filesystem, "чтение/запись", $tags="video_stream")
+Rel_D(user_account_app, user_account_db, "чтение/запись")
+Rel_D(user_notification_app, user_notification_db, "чтение/запись")
+
+Rel_D(device_registry_app, message_brocker, "устройство добавлено/удалено", $tags="brocker_message")
+Rel_D(device_control_app, message_brocker, "устройство доступно/недоступно", $tags="brocker_message")
+Rel_D(sensors_app, message_brocker, "показания изменились", $tags="brocker_message")
+Rel_D(user_account_app, message_brocker, "изменение аккаунта пользователя", $tags="brocker_message")
+Rel_D(user_notification_app, message_brocker, "контроль изменения состояния системы", $tags="brocker_message")
+
+@enduml

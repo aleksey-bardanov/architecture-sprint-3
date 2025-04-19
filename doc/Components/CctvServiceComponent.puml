@@ -1,0 +1,30 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Диаграмма компонентов сервиса CCTV Service
+
+System(api_gateway, "API Gateway")
+System(s3, "Simple Storage Service")
+SystemDb(cctv_db, "CCTV Database", "PostgresQL")
+
+Container_Boundary(cctv, "CCTV Service") {
+  Component(video_uploading_server, "Video Uploading Server", "Server")
+  Component(video_downloading_server, "Video Downloading Server", "Server")
+  Component(db_controller, "DB Controller", "Controller")
+  Component(s3_controller, "S3 Controller", "Controller")
+}
+
+Rel(api_gateway, video_uploading_server, "Видео", "UDP")
+Rel(video_downloading_server, api_gateway, "Видео", "UDP")
+
+Rel_Down(video_uploading_server, db_controller, "Место хранения")
+Rel_Down(video_uploading_server, s3_controller, "Видео файл")
+
+Rel_Up(db_controller, video_downloading_server, "Место хранения")
+Rel_Up(s3_controller, video_downloading_server, "Видео файл")
+
+Rel_Down(db_controller, cctv_db, "Чтение/Запись", "SQL")
+Rel_Down(s3_controller, s3, "Чтение/Запись", "S3")
+
+@enduml

@@ -1,0 +1,23 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Диаграмма компонентов сервиса Device Registry Service
+
+System(api_gateway, "API Gateway")
+SystemQueue(message_brocker, "Kafka")
+
+Container_Boundary(device_registry_service, "Device Registry Service") {
+  Component(rest_controller, "REST Controller", "Controller")
+  Component(registry_server, "Device Registry Server", "Server")
+  Component(mq_controller, "MQ Controller", "Controller")
+}
+
+Rel_Down(api_gateway, rest_controller, "Использует", "HTTP, REST")
+
+Rel_Right(rest_controller, registry_server, "Регистрация нового устройства")
+Rel_Right(registry_server, mq_controller, "Событие регистрации")
+
+Rel_Down(mq_controller, message_brocker, "Публикует")
+
+@enduml
